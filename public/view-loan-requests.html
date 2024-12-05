@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Requests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: #333;
+            border-radius: 10px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 0.5rem;
+        }
+
+        .loan-request {
+            background: #444;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .no-requests {
+            text-align: center;
+            color: #888;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .fund-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .reject-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Loan Requests</h1>
+        <div id="loanRequestsContainer">
+            <!-- Loan requests will be dynamically populated here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            const loanRequestsContainer = document.getElementById('loanRequestsContainer');
+
+            if (!token) {
+    console.warn('No authentication token found');
+    // Optional: handle this scenario differently
+}
+window.approveLoan = async function(loanId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/loans/${loanId}/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert('Loan approved successfully!');
+            fetchLoanRequests(); // Refresh the list
+        } else {
+            alert(result.message || 'Failed to approve loan');
+        }
+    } catch (error) {
+        console.error('Loan approval error:', error);
+        alert('Failed to approve loan');
+    }
+};
+            async function fetchLoanRequests() {
+    try {
+        const response = await fetch('http://localhost:3000/api/loan-requests', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch loan requests');
+                    }
+
+                    const loanRequests = await response.json();
+
+                    // Clear previous content
+                    loanRequestsContainer.innerHTML = '';
+
+                    // Check if there are no loan requests
+                    if (loanRequests.length === 0) {
+                        loanRequestsContainer.innerHTML = `
+                            <p class="no-requests">
+                                No loan requests have been made to you at this time.
+                            </p>
+                        `;
+                        return;
+                    }
+
+                    // Populate loan requests
+                    loanRequests.forEach(loan => {
+    const loanElement = document.createElement('div');
+    loanElement.className = 'loan-request';
+    loanElement.innerHTML = `
+        <h3>Loan Request</h3>
+        <p>Amount: $${loan.loanAmount ? loan.loanAmount.toFixed(2) : 'N/A'}</p>
+        <p>Interest Rate: ${loan.interestRate ? loan.interestRate.toFixed(2) : 'N/A'}%</p>
+        <p>Duration: ${loan.loanTerm || 'N/A'} months</p>
+        <p>Status: ${loan.status || 'Unknown'}</p>
+        <button onclick="approveLoan('${loan._id}')">Approve Loan</button>
+    `;
+    loanRequestsContainer.appendChild(loanElement);
+});
+
+                    
+                } catch (error) {
+                    console.error('Error fetching loan requests:', error);
+                    loanRequestsContainer.innerHTML = `
+                        <p class="no-requests">
+                            Unable to fetch loan requests. ${error.message}
+                        </p>
+                    `;
+                }
+            }
+
+            // Funding and rejecting loan functions
+            window.fundLoan = async function(loanId) {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/loans/${loanId}/fund`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ lenderId: userId })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Loan funded successfully!');
+                        fetchLoanRequests(); // Refresh the list
+                    } else {
+                        alert(result.message || 'Failed to fund loan');
+                    }
+                } catch (error) {
+                    console.error('Loan funding error:', error);
+                    alert('Failed to fund loan');
+                }
+            };
+
+            window.rejectLoan = async function(loanId) {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/loans/${loanId}/reject`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Loan rejected successfully');
+                        fetchLoanRequests(); // Refresh the list
+                    } else {
+                        alert(result.message || 'Failed to reject loan');
+                    }
+                } catch (error) {
+                    console.error('Loan rejection error:', error);
+                    alert('Failed to reject loan');
+                }
+            };
+
+            // Initial fetch of loan requests
+            fetchLoanRequests();
+        });
+    </script>
+</body>
+</html>

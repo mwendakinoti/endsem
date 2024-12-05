@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            margin: 0;
+        }
+        .chat-container {
+            width: 80%;
+            max-width: 800px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #00aaff;
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+        #chat-header {
+            background-color: #00aaff;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        #message-form {
+            display: flex;
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        #message-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #00aaff;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+        .message.sent {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+        }
+        .message.received {
+            background-color: #f1f0f0;
+            align-self: flex-start;
+        }
+        .message .username {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .message .content {
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2 id="chat-header">Private Chat with <span id="recipient-name"></span></h2>
+        <div id="messages-container"></div>
+        <form id="message-form">
+            <input type="text" id="message-input" placeholder="Type a message" required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    <script>
+        const messagesContainer = document.getElementById('messages-container');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const recipientName = document.getElementById('recipient-name');
+        const currentUsername = localStorage.getItem('username');
+        const urlParams = new URLSearchParams(window.location.search);
+        const recipient = urlParams.get('recipient');
+
+        recipientName.textContent = recipient;
+
+        function createMessageElement(message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(message.username === currentUsername ? 'sent' : 'received');
+            messageElement.innerHTML = `
+                <div class="username">${message.username}</div>
+                <div class="content">${message.message}</div>
+            `;
+            return messageElement;
+        }
+
+        async function fetchPrivateMessages() {
+            try {
+                const response = await fetch(`http://localhost:3000/chat/private?recipient=${recipient}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const messages = await response.json();
+                console.log('Fetched messages:', messages); 
+                messagesContainer.innerHTML = '';
+                messages.forEach(message => {
+                    messagesContainer.appendChild(createMessageElement(message));
+                });
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            } catch (error) {
+                console.error('Error fetching private messages:', error);
+            }
+        }
+
+        async function sendPrivateMessage(message) {
+            try {
+                const response = await fetch('http://localhost:3000/chat/private', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ message, recipient })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    messageInput.value = '';
+                    fetchPrivateMessages();
+                } else {
+                    console.error(result.message);
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Error sending private message:', error);
+            }
+        }
+
+        messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (message) {
+                sendPrivateMessage(message);
+            }
+        });
+
+        fetchPrivateMessages();
+        setInterval(fetchPrivateMessages, 5000);
+    </script>
+</body>
+</html>

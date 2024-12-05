@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color:  #0e0d0d;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: #007bff;
+      color: #fff;
+      text-align: center;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+
+    main {
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    section {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1), 0 0 40px rgba(0, 123, 255, 0.6); /* Updated box-shadow */
+      width: 100%;
+      max-width: 400px;
+      transition: box-shadow 0.3s ease-in-out;
+    }
+
+    section:hover {
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2), 0 0 60px rgba(0, 123, 255, 0.8); /* Updated box-shadow on hover */
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #007bff;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 0.5rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .actions button {
+      padding: 0.75rem;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .actions button:hover {
+      background-color: #0056b3;
+    }
+
+    .back-btn {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .back-btn button {
+      background-color: #6c757d;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-btn button:hover {
+      background-color: #5a6268;
+    }
+
+    footer {
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      padding: 1rem;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+      margin-top: auto;
+    }
+
+    .admin-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        .admin-controls button {
+            padding: 0.5rem 1rem;
+            background-color: #6c757d;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Dashboard</h1>
+  </header>
+  <main>
+    <section>
+      <h2>Manage Requests</h2>
+      <div class="actions">
+        <button onclick="window.location.href='loanRequests.html'">Loan Requests</button>
+        <button onclick="window.location.href='depositrequests.html'">Deposits</button>
+        <button onclick="window.location.href='withdrawRequests.html'">Withdraw Requests</button>
+        <button onclick="window.location.href='contactadmin.html'">Customer Feedback</button>
+        <button onclick="window.location.href='customerBalances.html'">Customer Balances</button>
+        <button onclick="window.location.href='mpesa.html'">Mpesa Deposit</button>
+        <button onclick="window.location.href='exitNotifications.html'">Exit Requests</button>
+      </div>
+      <div class="admin-controls">
+        <button onclick="window.location.href='admin.html'">Back to Main Admin</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+    </section>
+    
+  </main>
+  <footer>
+    <p>&copy; 2024 Twerandus Sacco</p>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('token');
+        const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+        if (!token || !isAdmin) {
+            alert('You do not have permission to access this page.');
+            window.location.href = 'login.html';
+        }
+    });
+    function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('isAdmin');
+            window.location.href = 'login.html';
+        }
+</script>
+</body>
+</html>

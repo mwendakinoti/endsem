@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Resource Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background-color: rgb(249, 250, 251);
+            padding: 1.5rem;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: rgb(17, 24, 39);
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: rgb(75, 85, 99);
+        }
+
+        .resources-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (min-width: 768px) {
+            .resources-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgb(229, 231, 235);
+        }
+
+        .card-header-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .icon {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .icon.blue { color: rgb(37, 99, 235); }
+        .icon.green { color: rgb(22, 163, 74); }
+        .icon.purple { color: rgb(147, 51, 234); }
+        .icon.orange { color: rgb(234, 88, 12); }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: rgb(17, 24, 39);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .resource-list {
+            list-style: none;
+        }
+
+        .resource-item {
+            margin-bottom: 1rem;
+        }
+
+        .resource-button {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem;
+            border: none;
+            background: transparent;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .resource-button:hover {
+            background-color: rgb(249, 250, 251);
+        }
+
+        .resource-name {
+            font-weight: 500;
+            color: rgb(37, 99, 235);
+            margin-bottom: 0.25rem;
+        }
+
+        .resource-button:hover .resource-name {
+            color: rgb(30, 64, 175);
+        }
+
+        .resource-description {
+            font-size: 0.875rem;
+            color: rgb(107, 114, 128);
+        }
+
+        .help-section {
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .help-card {
+            background: rgb(239, 246, 255);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .help-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .help-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .help-text {
+            color: rgb(75, 85, 99);
+            margin-bottom: 1rem;
+        }
+
+        .contact-button {
+            background: rgb(37, 99, 235);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .contact-button:hover {
+            background: rgb(29, 78, 216);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Financial Resource Hub</h1>
+            <p>Access trusted tools, education, and resources to help manage your finances</p>
+        </div>
+
+        <div class="resources-grid" id="resources-grid">
+            <!-- Resources will be dynamically inserted here -->
+        </div>
+
+        <div class="help-section">
+            <div class="help-card">
+                <div class="help-header">
+                    <i data-feather="help-circle" class="icon blue"></i>
+                    <h2 class="help-title">Need Help?</h2>
+                </div>
+                <p class="help-text">
+                    These resources are from trusted third-party providers. For SACCO-specific assistance, please contact our support team.
+                </p>
+                <button class="contact-button" onclick="contactSupport()">Contact Support</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        const resources = [
+            {
+                title: "Financial Education",
+                icon: "graduation-cap",
+                iconColor: "blue",
+                items: [
+                    {
+                        name: "Khan Academy Personal Finance",
+                        link: "https://www.khanacademy.org/college-careers-more/personal-finance",
+                        description: "Free comprehensive personal finance courses"
+                    },
+                    {
+                        name: "Investopedia Financial Terms",
+                        link: "https://www.investopedia.com/financial-term-dictionary-4769738",
+                        description: "Dictionary of financial terms and concepts"
+                    },
+                    {
+                        name: "NerdWallet Money Guide",
+                        link: "https://www.nerdwallet.com/blog/finance/how-to-budget/",
+                        description: "Practical guides on money management"
+                    }
+                ]
+            },
+            {
+                title: "Tools & Calculators",
+                icon: "calculator",
+                iconColor: "green",
+                items: [
+                    {
+                        name: "Bankrate Calculators",
+                        link: "https://www.bankrate.com/calculators/",
+                        description: "Comprehensive financial calculators"
+                    },
+                    {
+                        name: "Mortgage Calculator",
+                        link: "https://www.calculator.net/mortgage-calculator.html",
+                        description: "Calculate mortgage payments and costs"
+                    },
+                    {
+                        name: "Compound Interest Calculator",
+                        link: "https://www.investor.gov/financial-tools-calculators/calculators/compound-interest-calculator",
+                        description: "Plan long-term savings growth"
+                    }
+                ]
+            },
+            {
+                title: "Market Insights",
+                icon: "trending-up",
+                iconColor: "purple",
+                items: [
+                    {
+                        name: "Yahoo Finance",
+                        link: "https://finance.yahoo.com/",
+                        description: "Real-time market data and news"
+                    },
+                    {
+                        name: "Trading Economics",
+                        link: "https://tradingeconomics.com/",
+                        description: "Economic indicators and market data"
+                    },
+                    {
+                        name: "Financial Times",
+                        link: "https://www.ft.com/markets",
+                        description: "Global financial market analysis"
+                    }
+                ]
+            },
+            {
+                title: "Financial Planning",
+                icon: "file-text",
+                iconColor: "orange",
+                items: [
+                    {
+                        name: "MyMoney.gov",
+                        link: "https://www.mymoney.gov/",
+                        description: "Official US government financial guidance"
+                    },
+                    {
+                        name: "Personal Capital",
+                        link: "https://www.personalcapital.com/financial-planning",
+                        description: "Free financial planning tools"
+                    },
+                    {
+                        name: "SmartAsset",
+                        link: "https://smartasset.com/investing/investment-calculator",
+                        description: "Investment and retirement planning tools"
+                    }
+                ]
+            }
+        ];
+
+        function createResourceCard(resource) {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-header-content">
+                            <i data-feather="${resource.icon}" class="icon ${resource.iconColor}"></i>
+                            <h2 class="card-title">${resource.title}</h2>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <ul class="resource-list">
+                            ${resource.items.map(item => `
+                                <li class="resource-item">
+                                    <button class="resource-button" onclick="openLink('${item.link}')">
+                                        <div class="resource-name">${item.name}</div>
+                                        <div class="resource-description">${item.description}</div>
+                                    </button>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openLink(link) {
+            window.open(link, '_blank', 'noopener noreferrer');
+        }
+
+        function contactSupport() {
+            alert('Contact support functionality would go here');
+        }
+
+        // Render all resource cards
+        document.getElementById('resources-grid').innerHTML = resources.map(createResourceCard).join('');
+        // Re-initialize Feather Icons after dynamic content is added
+        feather.replace();
+    </script>
+</body>
+</html>

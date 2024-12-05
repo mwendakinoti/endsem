@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exit Notifications</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #0a0a2a;
+            background-image: url('');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: 50% 50%;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: rgba(0, 123, 255, 0.8);
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        header .back-button {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        header .back-button img {
+            width: 24px;
+            height: 24px;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .table-container {
+            background: rgba(51, 51, 51, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 1000px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background-color: rgba(0, 123, 255, 0.8);
+            color: #fff;
+            font-weight: bold;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            background-color: rgba(40, 167, 69, 0.8);
+            color: #fff;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            background-color: rgba(40, 167, 69, 1);
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        .glow {
+            animation: glow 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="content">
+        <header>
+            <button class="back-button" onclick="window.location.href='admin-dashboard.html'">
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/back.png" alt="Back">
+            </button>
+            <h1>Exit Notifications</h1>
+        </header>
+        <main>
+            <div class="table-container glow">
+                <table id="exitNotificationsTable">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Exit Date</th>
+                            <th>Status</th>
+                            <th>Balance</th>
+                            <th>Shares</th>
+                            <th>Share Value</th>
+                            <th>Total Value</th>
+                            <th>Phone Number</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Exit notifications will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#ffffff"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#ffffff",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 6,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "repulse"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 400,
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 400,
+                        "size": 40,
+                        "duration": 2,
+                        "opacity": 8,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 200,
+                        "duration": 0.4
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    },
+                    "remove": {
+                        "particles_nb": 2
+                    }
+                }
+            },
+            "retina_detect": true
+        });
+</script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+            if (!token || !isAdmin) {
+                alert('You do not have permission to access this page.');
+                window.location.href = 'login.html';
+            }
+
+            fetchExitNotifications();
+        });
+
+        function fetchExitNotifications() {
+            const token = localStorage.getItem('token');
+            fetch('http://localhost:3000/admin/exit-notifications', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    populateExitNotificationsTable(data.exitNotifications);
+                } else {
+                    alert('Failed to fetch exit notifications');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while fetching exit notifications');
+            });
+        }
+
+        function populateExitNotificationsTable(exitNotifications) {
+    const tbody = document.querySelector('#exitNotificationsTable tbody');
+    tbody.innerHTML = '';
+    exitNotifications.forEach(notification => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${notification.username}</td>
+            <td>${new Date(notification.exitDate).toLocaleString()}</td>
+            <td>${notification.status}</td>
+            <td>${notification.userData.exitBalance}</td>
+            <td>${notification.userData.exitShares}</td>
+            <td>${notification.userData.exitShareValue}</td>
+            <td>${notification.userData.totalExitValue}</td>
+            <td>${notification.userData.phoneNumber}</td>
+            <td>
+                ${getActionButtons(notification)}
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function getActionButtons(notification) {
+    switch(notification.status) {
+        case 'refund_pending':
+            return `<button onclick="processRefund('${notification._id}')">Process Refund</button>`;
+        case 'refunded':
+        case 'loan_outstanding':
+            return `<button onclick="deleteAccount('${notification._id}')">Delete Account</button>`;
+        case 'completed':
+            return 'Account Closed';
+        default:
+            return `<button onclick="reinstateUser('${notification._id}')">Reinstate User</button>`;
+    }
+}
+
+        function reinstateUser(notificationId) {
+            const token = localStorage.getItem('token');
+            fetch(`http://localhost:3000/admin/reinstate-user/${notificationId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    fetchExitNotifications();
+                } else {
+                    alert('Failed to reinstate user');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while reinstating the user');
+            });
+        }
+
+        function processRefund(notificationId) {
+    const token = localStorage.getItem('token');
+    fetch(`http://localhost:3000/admin/process-exit/${notificationId}`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'refund' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            fetchExitNotifications();
+        } else {
+            alert('Failed to process refund');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing the refund');
+    });
+}
+
+function deleteAccount(notificationId) {
+    const token = localStorage.getItem('token');
+    fetch(`http://localhost:3000/admin/process-exit/${notificationId}`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'delete' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            fetchExitNotifications();
+        } else {
+            alert('Failed to delete account');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the account');
+    });
+}
+    </script>
+</body>
+</html>

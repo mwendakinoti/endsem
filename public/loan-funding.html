@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fund Loan</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .loan-details { background: #f4f4f4; padding: 15px; margin-bottom: 20px; }
+    .fund-btn { background-color: #4CAF50; color: white; padding: 10px; border: none; }
+  </style>
+</head>
+<body>
+  <div class="loan-details" id="loanDetailsContainer">
+    <!-- Loan details will be dynamically populated -->
+  </div>
+  <button id="fundLoanBtn" class="fund-btn">Fund Loan</button>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const loanId = new URLSearchParams(window.location.search).get('loanId');
+      const currentUserId = 'YOUR_CURRENT_USER_ID'; // Get from authentication
+      const loanDetailsContainer = document.getElementById('loanDetailsContainer');
+      const fundLoanBtn = document.getElementById('fundLoanBtn');
+
+      // Fetch loan details
+      async function fetchLoanDetails() {
+        try {
+          const response = await fetch(`/api/loans/${loanId}`);
+          const loanDetails = await response.json();
+
+          // Display loan details
+          loanDetailsContainer.innerHTML = `
+            <h2>Loan Details</h2>
+            <p>Borrower: ${loanDetails.borrower.username}</p>
+            <p>Amount: $${loanDetails.amount}</p>
+            <p>Interest Rate: ${loanDetails.interestRate}%</p>
+            <p>Term: ${loanDetails.term} months</p>
+          `;
+        } catch (error) {
+          console.error('Error fetching loan details:', error);
+        }
+      }
+
+      // Fund loan
+      async function fundLoan() {
+        try {
+          const response = await fetch('/api/loans/fund', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              loanId: loanId,
+              lenderId: currentUserId
+            })
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            alert('Loan funded successfully!');
+            // Redirect or update UI
+          } else {
+            alert(result.message);
+          }
+        } catch (error) {
+          console.error('Loan funding error:', error);
+          alert('Failed to fund loan');
+        }
+      }
+
+      // Initialize
+      fetchLoanDetails();
+      fundLoanBtn.addEventListener('click', fundLoan);
+    });
+  </script>
+</body>
+</html>

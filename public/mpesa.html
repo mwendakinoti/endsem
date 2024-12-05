@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M-Pesa Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            padding: 5px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Dashboard - M-Pesa Verification</h1>
+        <table id="pendingTransactions">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Amount</th>
+                    <th>M-Pesa Message</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Pending transactions will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchPendingTransactions();
+        });
+
+        async function fetchPendingTransactions() {
+    try {
+        const response = await fetch('http://localhost:3000/admin/pending-transactions', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            displayPendingTransactions(data.transactions);
+        } else {
+            console.error('Error fetching pending transactions:', data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+function displayPendingTransactions(transactions) {
+    const tbody = document.querySelector('#pendingTransactions tbody');
+    tbody.innerHTML = '';
+    transactions.forEach(transaction => {
+        const row = `
+            <tr>
+                <td>${transaction.username}</td>
+                <td>${transaction.amount}</td>
+                <td>${transaction.mpesaMessage}</td>
+                <td>
+                    <button onclick="verifyTransaction('${transaction._id}', true)">Approve</button>
+                    <button onclick="verifyTransaction('${transaction._id}', false)">Reject</button>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+        function verifyTransaction(transactionId, isApproved) {
+            fetch('http://localhost:3000/admin/verify-transaction', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ transactionId, isApproved })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    fetchPendingTransactions(); // Refresh the list
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>

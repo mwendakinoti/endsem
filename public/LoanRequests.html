@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Loan Requests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        header .back-button {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        header .back-button img {
+            width: 24px;
+            height: 24px;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .request {
+            background: #333;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            transition: all 0.3s ease;
+            color: #fff;
+            margin-bottom: 2rem;
+        }
+
+        .request:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #fff;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 0.5rem;
+        }
+
+        p {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        p strong {
+            display: block;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+
+        .actions button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .approve {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .reject {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(0, 123, 255, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+        }
+
+        .glow {
+            animation: glow 2s infinite;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="back-button" onclick="window.history.back();">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/back.png" alt="Back">
+        </button>
+        <h1>Loan Requests</h1>
+    </header>
+    <main>
+        <div id="requests-container" class="container"></div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('You must be logged in to view this page.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            fetch('http://localhost:3000/admin/loan-requests', {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    }
+})
+.then(response => {
+    if (!response.ok) {
+        if (response.status === 403) {
+            throw new Error('Authentication failed or admin access required');
+        }
+        throw new Error('Network response was not ok');
+    }
+    return response.json();
+})
+.then(data => {
+    if (data && data.loanRequests) {
+        displayLoanRequests(data.loanRequests);
+    } else {
+        throw new Error('Invalid response format');
+    }
+})
+.catch(error => {
+    console.error('Error:', error);
+    alert(`Error: ${error.message}`);
+    if (error.message === 'Authentication failed or admin access required') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('isAdmin');
+        window.location.href = 'login.html';
+    }
+});
+        });
+
+        function displayLoanRequests(loanRequests) {
+    const container = document.getElementById('requests-container');
+    
+    if (!loanRequests || loanRequests.length === 0) {
+        container.innerHTML = '<p>No pending loan requests found.</p>';
+        return;
+    }
+
+    let html = '';
+    loanRequests.forEach(loan => {
+        html += `
+            <div class="request glow">
+                <h2>Loan Request</h2>
+                <p><strong>Username:</strong> ${loan.username || 'N/A'}</p>
+                <p><strong>Amount:</strong> $${(loan.amount || 0).toFixed(2)}</p>
+                <p><strong>Duration:</strong> ${loan.duration || 'N/A'} months</p>
+                <p><strong>Interest Rate:</strong> ${(loan.interestRate || 0).toFixed(2)}%</p>
+                <p><strong>Total Repayment:</strong> $${(loan.totalRepayment || 0).toFixed(2)}</p>
+                <p><strong>Monthly Repayment:</strong> $${(loan.monthlyRepayment || 0).toFixed(2)}</p>
+                <p><strong>Time:</strong> ${loan.time ? new Date(loan.time).toLocaleString() : 'N/A'}</p>
+                <div class="actions">
+                    <button class="approve" onclick="approveLoan('${loan._id}')">Approve</button>
+                    <button class="reject" onclick="rejectLoan('${loan._id}')">Reject</button>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+        function approveLoan(loanId) {
+            sendLoanAction(loanId, 'approve');
+        }
+
+        function rejectLoan(loanId) {
+            sendLoanAction(loanId, 'reject');
+        }
+
+        function sendLoanAction(loanId, action) {
+            const token = localStorage.getItem('token');
+            fetch(`http://localhost:3000/admin/loan-requests/${loanId}/${action}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (action === 'approve') {
+                        const phoneNumber = data.phoneNumber;
+                        alert(`Loan approved successfully. Send funds to: ${phoneNumber}`);
+                    } else {
+                        alert(`Loan ${action}ed successfully`);
+                    }
+                    // Refresh the loan request list
+                    location.reload();
+                } else {
+                    alert(`Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+            });
+        }
+    </script>
+</body>
+</html>

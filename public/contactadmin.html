@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Messages</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        header .back-button {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        header .back-button img {
+            width: 24px;
+            height: 24px;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .message {
+            background: #333;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            transition: all 0.3s ease;
+            color: #fff;
+            margin-bottom: 2rem;
+        }
+
+        .message:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #fff;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 0.5rem;
+        }
+
+        p {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        p strong {
+            display: block;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+
+        .actions button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .mark-read {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(0, 123, 255, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+        }
+
+        .glow {
+            animation: glow 2s infinite;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="back-button" onclick="window.history.back();">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/back.png" alt="Back">
+        </button>
+        <h1>Customer Messages</h1>
+    </header>
+    <main>
+        <div id="messages-container" class="container"></div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('You must be logged in to view this page.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            fetch('http://localhost:3000/admin/messages', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        alert('Authentication failed or admin access required. Please log in again.');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('isAdmin');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                displayMessages(data.messages);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+            });
+        });
+
+        function displayMessages(messages) {
+            const container = document.getElementById('messages-container');
+            
+            if (messages.length === 0) {
+                container.innerHTML = '<p>No customer messages found.</p>';
+                return;
+            }
+
+            let html = '';
+            messages.forEach(message => {
+                html += `
+                    <div class="message ${message.read ? '' : 'glow'}">
+                        <h2>Customer Message</h2>
+                        <p><strong>Username:</strong> ${message.username}</p>
+                        <p><strong>Time:</strong> ${new Date(message.time).toLocaleString()}</p>
+                        <p><strong>Message:</strong> ${message.message}</p>
+                        <div class="actions">
+                            <button class="mark-read" onclick="markAsRead('${message._id}')" ${message.read ? 'disabled' : ''}>
+                                ${message.read ? 'Read' : 'Mark as Read'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function markAsRead(messageId) {
+            const token = localStorage.getItem('token');
+            fetch(`http://localhost:3000/admin/messages/${messageId}/read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Message marked as read');
+                    // Refresh the message list
+                    location.reload();
+                } else {
+                    alert(`Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+            });
+        }
+    </script>
+</body>
+</html>

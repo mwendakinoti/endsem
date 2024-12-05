@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Twerandus Sacco Dashboard</title>
+   
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0e0d0d;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header Styles */
+        header {
+        background-color: #6c757d;
+        color: #fff;
+        text-align: center;
+        padding: 0.5rem 0;
+        width: 100%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 1001; /* Increased z-index to ensure it's above sidebar */
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 50px; /* Set a fixed height for the header */
+    }
+
+
+        header h1 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Content Wrapper */
+          .content-wrapper {
+        display: flex;
+        flex: 1;
+        margin-top: 50px; /* Match this to the header height */
+        height: calc(100vh - 40px); /* Subtract header height from viewport height */
+        overflow: hidden; /* Prevent scrolling on the wrapper */
+    }
+
+
+        /* Sidebar Styles */
+        .sidebar {
+        background-color: #e9ecef;
+        color: #333;
+        width: 250px;
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        position: fixed;
+        top: 40px; /* Match this to the header height */
+        left: 0;
+        bottom: 0;
+        overflow-y: auto;
+        z-index: 1000;
+        height: calc(100vh - 40px); /* Subtract header height from viewport height */
+    }
+
+        .sidebar button {
+            padding: 0.75rem 1.5rem;
+            background-color: #6c757d;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar button:hover {
+            background-color: #007bff;
+            transform: translateY(-2px);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+        margin-left: 250px; /* Match sidebar width */
+        padding: 20px;
+        flex: 1;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow-y: auto;
+        height: 100%; /* Take full height of content wrapper */
+    }
+
+
+        /* Section Styles */
+        .section {
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .section h2 {
+            margin-bottom: 1.5rem;
+            color: #007bff;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 0.5rem;
+        }
+
+        /* Footer Styles */
+        footer {
+            background-color: #6c757d;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 100%;
+                max-width: 250px;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        #transactionTypeFilter {
+            padding: 10px;
+            margin-bottom: 20px;
+            width: 200px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        /* Notification Styles */
+        #notification-area {
+            margin-bottom: 1rem;
+        }
+
+        .notification {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .notification button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .notification button:hover {
+            background-color: #0056b3;
+        }
+
+        #mgr-alert {
+            background-color: #ffe0e0;
+            border: 1px solid #ffb3b3;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .confirmation-list {
+  margin-top: 10px;
+}
+
+.sender-confirmation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.sender-confirmation input[type="checkbox"] {
+  margin-left: 10px;
+}
+
+.participant-confirmation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-indicator {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.8em;
+}
+
+.status-indicator.paid {
+  background-color: #28a745;
+  color: white;
+}
+
+.status-indicator.unpaid {
+  background-color: #dc3545;
+  color: white;
+}
+
+.xp-bar {
+      background-color: #e0e0e0;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    
+    .xp-progress {
+      background-color: #4CAF50;
+      height: 100%;
+      transition: width 0.5s ease-in-out;
+    }
+    
+    .achievement {
+      background-color: #f1f1f1;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    
+ /* Preferences Button */
+ .preferences-container {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px;
+    background: #6c757d;
+  }
+
+  .preferences-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Profile Preview */
+  .profile-preview {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    overflow: hidden;
+  }
+
+  .profile-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Preferences Menu */
+  .preferences-menu {
+    position: absolute;
+    top: 100%;
+    right: 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+    display: none;
+    z-index: 1000;
+  }
+
+  .preferences-menu.active {
+    display: block;
+  }
+
+  .menu-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .menu-item:hover {
+    background: #f5f5f5;
+  }
+
+  .theme-switch {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+    margin-left: auto;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+
+  input:checked + .slider {
+    background-color: #2196F3;
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }
+
+  body.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+.dark-mode .sidebar {
+    background-color: #333333;
+}
+
+.dark-mode header {
+    background-color: #1a1a1a;
+}
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+     
+        <h1><i class="fas fa-piggy-bank"></i> Twerandus Sacco Dashboard</h1>
+        <p id="welcomeMessage"></p>
+        
+        
+    </header>
+
+    <div class="content-wrapper">
+        <div class="sidebar">
+            <button onclick="window.location.href='deposit.html'"><i class="fas fa-money-bill-wave"></i> Deposit Money</button>
+            <button onclick="window.location.href='withdraw.html'"><i class="fas fa-hand-holding-usd"></i> Withdraw Money</button>
+            <button onclick="window.location.href='apply-loan.html'"><i class="fas fa-file-invoice-dollar"></i> Apply for Loan</button>
+            <button onclick="window.location.href='contact.html'"><i class="fas fa-headset"></i> Customer Service</button>
+            <button onclick="window.location.href='chat.html'"><i class="fas fa-comments"></i> Join Chat</button>
+            <button onclick="window.location.href='transactions.html'"><i class="fas fa-history"></i> Transactions</button>
+            <button onclick="window.location.href='exit.html'"><i class="fas fa-sign-out-alt"></i> Exit Sacco</button>
+            <button onclick="window.location.href='buy-shares.html'"><i class="fas fa-money-bill-wave"></i> Buy shares</button>
+            <button onclick="window.location.href='merry-go-round.html'"><i class="fas fa-money-bill-wave"></i> Merry-Go-Round</button>
+            <button onclick="window.location.href='ai-assistant.html'"><i class="fas fa-robot"></i> AI Assistant</button>
+            <button onclick="window.location.href='financialhub.html'"><i class="fas fa-robot"></i>Financial-hub</button>
+            <button onclick="window.location.href='p2p-Loan.html'"><i class="fas fa-money-bill-wave"></i>p2p Loan</button>
+             <button onclick="window.location.href='view-loan-requests.html'"><i class="fas fa-money-bill-wave"></i>p2p</button>
+             <button onclick="window.location.href='loan-funding.html'"><i class="fas fa-money-bill-wave"></i>p2p funding</button>
+            <button id="logoutButton" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            
+        </div>
+       
+            </section>
+
+            <div id="mgr-alert" class="alert alert-info" style="display: none;"></div>
+
+            <section class="section">
+                <div class="container">
+                    <h1>Sacco Dashboard Gamification</h1>
+                    <div class="level">
+                      <h2>Level: <span id="level">1</span></h2>
+                      <div class="xp-bar">
+                        <div class="xp-progress" id="xp-progress"></div>
+                      </div>
+                    </div>
+                    
+                    <div class="achievements">
+                      <h2>Achievements</h2>
+                      <div id="achievement-area"></div>
+                    </div>
+                  </div>
+                <div class="main-content">
+                    <section class="section">
+                        <h2>Notifications</h2>
+                        <div id="notification-area">
+                        </div>
+                <h2>Account Balance</h2>
+                <p>Current Balance: <span id="accountBalance">0.00 shillings</span></p>
+                <p>Shares Owned: <span id="shareCount">0</span></p>
+            </section>
+       
+            <section class="section">
+                <select id="transactionTypeFilter">
+                    <option value="all">All Transactions</option>
+                    <option value="deposit">Deposits</option>
+                    <option value="withdrawal">Withdrawals</option>
+                    <option value="buy shares">Share Purchases</option>
+                    <option value="loan">Loans</option>
+                </select>
+                <h2>Transaction History Graph</h2>
+                <div class="chart-container" style="position: relative; height:50vh; width:80vw">
+                    <canvas id="transactionChart"></canvas>
+                </div>
+            </section>
+            <footer>
+                <p>&copy; 2024 Twerandus Sacco</p>
+            </footer>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script>
+         let chart;
+        let transactionData;
+
+        function logout() {
+            localStorage.removeItem('username');
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const username = localStorage.getItem('username');
+            document.getElementById('welcomeMessage').textContent = `Welcome, ${username}!`;
+            updateDashboard();
+        });
+
+        function updateDashboard() {
+            updateBalance();
+            updateShares();
+            fetchTransactionHistory();
+        }
+
+        function updateBalance() {
+            fetch('http://localhost:3000/user/balance', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Balance data:', data);
+                if (data.success) {
+                    const balanceInShillings = data.balance.toLocaleString() + ' Shillings';
+                    document.getElementById('accountBalance').textContent = balanceInShillings;
+                    document.getElementById('shareCount').textContent = data.shares;
+                } else {
+                    console.error('Error fetching balance:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+function updateShares() {
+            // Implementation similar to updateBalance
+        }
+
+  function fetchTransactionHistory() {
+    fetch('http://localhost:3000/user/transaction-history', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Received full data from server:', data);
+        if (data.success && data.labels && data.data && data.types) {
+            transactionData = {
+                labels: data.labels,
+                data: data.data,
+                types: data.types
+            };
+            console.log('Processed transaction data:', transactionData);
+            updateChart(transactionData.labels, transactionData.data, transactionData.types);
+        } else {
+            console.error('Error fetching transaction history or incomplete data:', data);
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching transaction history:', error);
+    });
+}
+
+function updateChart(labels, data, types, filterType = 'all') {
+    console.log('Updating chart with:');
+    console.log('Labels:', labels);
+    console.log('Data:', data);
+    console.log('Types:', types);
+    console.log('Filter Type:', filterType);
+
+    let filteredLabels = [];
+    let filteredData = [];
+    let filteredTypes = [];
+    
+    for (let i = 0; i < labels.length; i++) {
+        if (filterType === 'all' || types[i] === filterType) {
+            filteredLabels.push(labels[i]);
+            filteredData.push(data[i]);
+            filteredTypes.push(types[i]);
+        }
+    }
+    console.log('Filtered data count:', filteredData.length);
+
+    const ctx = document.getElementById('transactionChart').getContext('2d');
+    if (chart) {
+        chart.destroy();
+    }
+
+    const typeColors = {
+        'deposit': 'rgba(0, 255, 0, 0.5)',
+        'withdrawal': 'rgba(255, 0, 0, 0.5)',
+        'buy shares': 'rgba(0, 0, 255, 0.5)',
+        'loan': 'rgba(255, 165, 0, 0.5)'
+    };
+
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: filteredLabels,
+            datasets: [{
+                label: 'Transaction Amount',
+                data: filteredData,
+                backgroundColor: filteredTypes.map(type => typeColors[type] || 'rgba(0, 123, 255, 0.5)'),
+                borderColor: filteredTypes.map(type => typeColors[type] || 'rgba(0, 123, 255, 1)'),
+                borderWidth: 1,
+                pointBackgroundColor: filteredTypes.map(type => typeColors[type] || 'rgba(0, 123, 255, 1)')
+            }]
+        },
+
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'day'
+                    }
+                },
+                y: {
+                    beginAtZero: true
+                }
+            },
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += `${context.parsed.y} Shillings (${filteredTypes[context.dataIndex]})`;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+const SERVER_URL = 'http://localhost:3000'
+
+function fetchAndDisplayNotifications() {
+    fetch(`${SERVER_URL}/mgr/notifications`, {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const notificationArea = document.getElementById('notification-area');
+        if (data.success && data.notifications && data.notifications.length > 0) {
+            notificationArea.innerHTML = data.notifications.map(notif => 
+                `<div class="notification">${notif.message}</div>`
+            ).join('');
+        } else {
+            notificationArea.innerHTML = '<p>No new notifications</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching notifications:', error);
+        document.getElementById('notification-area').innerHTML = '<p>Failed to load notifications</p>';
+    });
+}
+
+// Call this function when the dashboard loads
+document.addEventListener('DOMContentLoaded', function() {
+    fetchAndDisplayNotifications();
+    // ... other initialization code ...
+});
+
+function displayNotifications(data) {
+    console.log('displayNotifications called');
+    const notificationArea = document.getElementById('notification-area');
+    console.log('notificationArea:', notificationArea);
+    
+    if (!notificationArea) {
+        console.error('Notification area not found in the DOM');
+        return;
+    }
+
+    if (!data || !data.success) {
+        notificationArea.innerHTML = '<p>Error loading notifications. Please try again later.</p>';
+        return;
+    }
+
+    if (!data.mgrNotifications || data.mgrNotifications.length === 0) {
+        notificationArea.innerHTML = '<p>No active Merry-Go-Round cycles</p>';
+        return;
+    }
+
+    notificationArea.innerHTML = data.mgrNotifications.map(notif => `
+        <div class="notification mb-3 p-3 border rounded" data-id="${notif._id}">
+            <h5 class="mb-2">Merry-Go-Round Cycle: ${notif.cycleName}</h5>
+            <p class="mb-2">Recipient: ${notif.recipient}</p>
+            <p class="mb-2">Total Amount: ${notif.totalAmount} Shillings</p>
+            <div class="confirmation-list">
+                ${notif.participants.map(participant => `
+                    <div class="participant-confirmation mb-2">
+                        <span>${participant.name}</span>
+                        <span class="status-indicator ${participant.hasPaid ? 'paid' : 'unpaid'}">
+                            ${participant.hasPaid ? 'Paid' : 'Unpaid'}
+                        </span>
+                        ${notif.isRecipient ? `
+                            <input type="checkbox" ${participant.hasPaid ? 'checked' : ''} 
+                                   onchange="confirmPayment('${notif._id}', '${participant.id}', this.checked)"
+                                   ${participant.hasPaid ? 'disabled' : ''}>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            ${notif.isRecipient ? `
+                <button class="btn btn-sm btn-primary mt-2" onclick="markCycleComplete('${notif._id}')">
+                    Mark Cycle as Complete
+                </button>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+async function loadMGRDetails() {
+    try {
+        const response = await fetch(`${SERVER_URL}/mgr/list`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        const data = await response.json();
+        const mgrInfo = document.getElementById('mgr-info');
+        if (data.success && data.mgrs && data.mgrs.length > 0) {
+            mgrInfo.innerHTML = data.mgrs.map(mgr => `
+                <div class="mgr-details">
+                    <p><strong>Name:</strong> ${mgr.name}</p>
+                    <p><strong>Monthly Amount:</strong> ${mgr.monthlyAmount}</p>
+                    <p><strong>Start Date:</strong> ${new Date(mgr.startDate).toLocaleDateString()}</p>
+                    <p><strong>Participants:</strong> ${mgr.participants.length}</p>
+                </div>
+            `).join('');
+        } else {
+            mgrInfo.innerHTML = '<p>You haven\'t joined any Merry-Go-Round groups yet. Join or create one to get started!</p>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('mgr-info').textContent = 'Failed to load MGR details. Please try again later.';
+    }
+}
+
+function confirmPayment(notificationId, participantId, isConfirmed) {
+    fetch(`${SERVER_URL}/mgr/confirm-payment`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ notificationId, participantId, isConfirmed })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            fetchAndDisplayNotifications(); // Refresh the notifications
+        } else {
+            alert('Failed to confirm payment');
+        }
+    })
+    .catch(error => console.error('Error confirming payment:', error));
+}
+
+function markCycleComplete(notificationId) {
+    if (confirm('Are you sure you want to mark this Merry-Go-Round cycle as complete?')) {
+        fetch(`${SERVER_URL}/mgr/complete-cycle`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ notificationId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                fetchAndDisplayNotifications(); // Refresh the notifications
+            } else {
+                alert('Failed to mark cycle as complete');
+            }
+        })
+        .catch(error => console.error('Error completing cycle:', error));
+    }
+}
+
+// Initialize notifications and set up periodic refresh
+document.addEventListener('DOMContentLoaded', function() {
+    fetchAndDisplayNotifications();
+    
+    // Refresh notifications every 5 minutes (300000 milliseconds)
+    setInterval(fetchAndDisplayNotifications, 300000);
+});
+function markAsRead(notificationId) {
+  fetch(`${SERVER_URL}/mgr/notifications/read`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ notificationId })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      displayNotifications(); // Refresh the notifications
+    }
+  })
+  .catch(error => console.error('Error marking notification as read:', error));
+}
+
+function updateMGRAlerts() {
+  const alertDiv = document.getElementById('mgr-alert');
+  if (!alertDiv) return;
+
+  fetch(`${SERVER_URL}/mgr/alerts`, {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.isRecipient) {
+      alertDiv.innerHTML = `<p>You are receiving the Merry-Go-Round funds this month!</p>`;
+      alertDiv.style.display = 'block';
+    } else if (data.shouldSend) {
+      alertDiv.innerHTML = `
+        <p>It's time to send your Merry-Go-Round contribution!</p>
+        <p>Send ${data.amount} to ${data.recipient} (Phone: ${data.phoneNumber})</p>
+        <button class="btn btn-primary" onclick="confirmMGRPayment('${data.mgrId}', '${data.recipient}')">Confirm Sent</button>
+      `;
+      alertDiv.style.display = 'block';
+    } else {
+      alertDiv.style.display = 'none';
+    }
+  })
+  .catch(error => {
+    console.error('Error checking MGR alerts:', error);
+    alertDiv.style.display = 'none';
+  });
+}
+
+function confirmMGRPayment(mgrId, recipient) {
+  fetch(`${SERVER_URL}/mgr/confirm-payment`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ mgrId, recipient })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Payment confirmed successfully');
+      updateMGRAlerts(); // Refresh alerts
+    } else {
+      alert('Failed to confirm payment');
+    }
+  })
+  .catch(error => {
+    console.error('Error confirming payment:', error);
+    alert('An error occurred while confirming payment');
+  });
+}
+
+// Initialize notifications and alerts
+document.addEventListener('DOMContentLoaded', function() {
+  displayNotifications();
+  updateMGRAlerts();
+  
+  // Refresh notifications and alerts every 12 hours
+  setInterval(() => {
+    displayNotifications();
+    updateMGRAlerts();
+  }, 12 * 60 * 60 * 1000);
+});
+
+function checkMGRNotifications() {
+  const token = localStorage.getItem('token');
+  fetch(`${SERVER_URL}/mgr/notifications`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      updateMGRAlerts(data);
+    } else {
+      console.error('Error in MGR notifications response:', data.message || 'Unknown error');
+      updateMGRAlerts(null); // Pass null to indicate an error
+    }
+  })
+  .catch(error => {
+    console.error('Error checking MGR notifications:', error);
+    updateMGRAlerts(null); // Pass null to indicate an error
+  });
+}
+
+function updateMGRAlerts(data) {
+  const alertDiv = document.getElementById('mgr-alert');
+  if (!alertDiv) return;
+
+  if (!data) {
+    alertDiv.innerHTML = '<p>Unable to fetch Merry-Go-Round information at this time.</p>';
+    alertDiv.style.display = 'block';
+    return;
+  }
+
+  if (data.isRecipient) {
+    alertDiv.innerHTML = `<p>You are receiving the Merry-Go-Round funds this month!</p>`;
+    alertDiv.style.display = 'block';
+  } else if (data.shouldSend) {
+    alertDiv.innerHTML = `
+      <p>It's time to send your Merry-Go-Round contribution!</p>
+      <p>Send ${data.amount} to ${data.recipient} (Phone: ${data.phoneNumber})</p>
+      <button class="btn btn-primary" onclick="confirmMGRPayment('${data.mgrId}', '${data.recipient}')">Confirm Sent</button>
+    `;
+    alertDiv.style.display = 'block';
+  } else {
+    alertDiv.innerHTML = ''; // Clear alerts if no action needed
+    alertDiv.style.display = 'none';
+  }
+}
+
+function confirmMGRPayment(mgrId, recipient) {
+  const token = localStorage.getItem('token');
+  fetch(`${SERVER_URL}/mgr/confirm-payment`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ mgrId, recipient })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Payment confirmed successfully');
+      checkMGRNotifications(); // Refresh notifications
+    } else {
+      alert('Failed to confirm payment');
+    }
+  })
+  .catch(error => {
+    console.error('Error confirming payment:', error);
+    alert('An error occurred while confirming payment');
+  });
+}
+
+// Check for notifications every 15 minutes
+setInterval(fetchAndDisplayNotifications, 15 * 60 * 1000);
+
+// Initialize notifications on page load
+document.addEventListener('DOMContentLoaded', function() {
+  
+  checkMGRNotifications();
+  displayNotifications();
+  checkMGRNotifications();
+  initChatbot();
+});
+
+ document.getElementById('transactionTypeFilter').addEventListener('change', (event) => {
+            console.log('Filter changed:', event.target.value);
+            if (transactionData && transactionData.labels && transactionData.data && transactionData.types) {
+                updateChart(transactionData.labels, transactionData.data, transactionData.types, event.target.value);
+            } else {
+                console.error('Transaction data is not in the expected format');
+                const ctx = document.getElementById('transactionChart').getContext('2d');
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.font = '20px Arial';
+                ctx.fillStyle = 'black';
+                ctx.textAlign = 'center';
+                ctx.fillText('Error: Unable to display chart due to missing data', ctx.canvas.width / 2, ctx.canvas.height / 2);
+            }
+        });
+
+        // Call updateDashboard every 30 seconds
+        setInterval(updateDashboard, 30000);
+      
+        let xp = 0;
+    let level = 1;
+    const achievements = [];
+
+    function handleDeposit() {
+      const depositAmount = 1000;
+      updateXp(depositAmount);
+      checkLevelUp();
+      unlockAchievement('First Deposit');
+    }
+
+    function handleWithdraw() {
+      const withdrawalAmount = 500;
+      updateXp(withdrawalAmount);
+      checkLevelUp();
+      unlockAchievement('Regular Saver');
+    }
+
+    function updateXp(amount) {
+      xp += amount;
+      updateXpBar();
+    }
+
+    function checkLevelUp() {
+      const requiredXp = level * 1000;
+      if (xp >= requiredXp) {
+        level++;
+        document.getElementById('level').textContent = level;
+        unlockAchievement(`Level ${level} Achieved`);
+      }
+      updateXpBar();
+    }
+
+    function updateXpBar() {
+      const xpProgress = document.getElementById('xp-progress');
+      xpProgress.style.width = `${(xp / (level * 1000)) * 100}%`;
+    }
+
+    function unlockAchievement(achievement) {
+      if (!achievements.includes(achievement)) {
+        achievements.push(achievement);
+        displayAchievements();
+      }
+    }
+
+    function displayAchievements() {
+      const achievementArea = document.getElementById('achievement-area');
+      achievementArea.innerHTML = '';
+      achievements.forEach((achievement) => {
+        const achievementElement = document.createElement('div');
+        achievementElement.classList.add('achievement');
+        achievementElement.textContent = achievement;
+        achievementArea.appendChild(achievementElement);
+      });
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+  const preferencesBtn = document.querySelector('.preferences-btn');
+  const preferencesMenu = document.querySelector('.preferences-menu');
+  const themeToggle = document.getElementById('theme-toggle');
+  const profileUpload = document.getElementById('profile-upload');
+  const profilePreview = document.getElementById('profile-preview-img');
+
+  // Storage management for preferences
+  const storage = {
+    setItem: function(key, value) {
+      try {
+        sessionStorage.setItem(key, value);
+      } catch (e) {
+        console.error('Session storage not available');
+      }
+    },
+    getItem: function(key) {
+      try {
+        return sessionStorage.getItem(key);
+      } catch (e) {
+        return null;
+      }
+    }
+  };
+
+  // Toggle preferences menu
+  preferencesBtn.addEventListener('click', () => {
+    preferencesMenu.classList.toggle('active');
+  });
+
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!preferencesBtn.contains(e.target) && !preferencesMenu.contains(e.target)) {
+      preferencesMenu.classList.remove('active');
+    }
+  });
+
+  // Dark Mode toggle
+  themeToggle.addEventListener('change', () => {
+    document.body.classList.toggle('dark-mode', themeToggle.checked);
+    storage.setItem('darkMode', themeToggle.checked ? 'true' : 'false');
+  });
+
+  // Load Dark Mode preference
+  const savedTheme = storage.getItem('darkMode');
+  if (savedTheme === 'true') {
+    themeToggle.checked = true;
+    document.body.classList.add('dark-mode');
+  }
+
+  // Profile photo upload
+  profileUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        profilePreview.src = e.target.result;
+        storage.setItem('profilePhoto', e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Load saved profile photo
+  const savedPhoto = storage.getItem('profilePhoto');
+  if (savedPhoto) {
+    profilePreview.src = savedPhoto;
+  }
+});
+    </script>
+</body>
+</html>

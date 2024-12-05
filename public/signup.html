@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up for Twerandus Sacco</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            background-color:  #0e0d0d;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .signup-container {
+            position: relative;
+            background: #000;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            z-index: 1;
+            color: #fff;
+        }
+        .signup-container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: transparent;
+            border-radius: 12px;
+            z-index: -1;
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.8);
+        }
+        h1 {
+            margin-bottom: 1.5rem;
+            color: #007bff;
+        }
+        label, input, select {
+            display: block;
+            width: 100%;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        input, select {
+            padding: 0.75rem;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            z-index: 1;
+            color: #ccc;
+        }
+        .password-toggle:hover {
+            color: #aaa;
+        }
+        .password-toggle svg {
+            width: 24px;
+            height: 24px;
+        }
+        .password-strength {
+            margin-top: 0.5rem;
+            text-align: left;
+        }
+        .weak {
+            color: #dc3545;
+        }
+        .fair {
+            color: #ffc107;
+        }
+        .strong {
+            color: #28a745;
+        }
+        .very-strong {
+            color: #007bff;
+        }
+        button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        @media (max-width: 600px) {
+            .signup-container {
+                padding: 1.5rem;
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <h1>Sign Up</h1>
+        <form id="signupForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            <label for="phoneNumber">Phone Number:</label>
+            <input type="tel" id="phoneNumber" name="phoneNumber" required pattern="[0-9]{10}" title="Please enter a valid 10-digit phone number" required>
+            <label for="password">Password:</label>
+            <div style="position: relative;">
+                <input type="password" id="password" name="password" required>
+                <div class="password-toggle" id="passwordToggle" aria-label="Show Password">
+                    🐵
+                </div>
+            </div>
+            <div class="password-strength" id="passwordStrength"></div>
+            <label for="guarantor">Select Guarantor:</label>
+            <select id="guarantor" name="guarantor" required>
+                <option value="">Select Guarantor</option>
+                <option value="guarantor1">Guarantor 1</option>
+                <option value="guarantor2">Guarantor 2</option>
+                <option value="guarantor3">Guarantor 3</option>
+            </select>
+            <button type="submit">Sign Up</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async function(event) {
+  event.preventDefault();
+
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const phoneNumber = document.getElementById('phoneNumber').value.trim();
+  const guarantor = document.getElementById('guarantor').value;
+
+  if (!username || !email || !password || !phoneNumber) {
+    alert('Please fill in all required fields');
+    return;
+  }
+
+  fetch('http://localhost:3000/register', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ username, email, password, phoneNumber, guarantor })
+})
+.then(response => response.json())
+.then(data => {
+    if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('username', username);
+        localStorage.setItem('isAdmin', data.isAdmin || false);
+        
+        alert('Sign Up Successful!');
+        window.location.href = 'dashboard.html';
+    } else {
+        alert(data.message || 'Registration failed. Please try again.');
+    }
+})
+.catch(error => {
+    console.error('Fetch error:', error);
+    alert('An error occurred while signing up. Please try again.');
+});
+   });
+
+        // Password toggle visibility
+        const passwordToggle = document.getElementById('passwordToggle');
+        const passwordInput = document.getElementById('password');
+
+        passwordToggle.addEventListener('click', () => {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordToggle.innerHTML = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                passwordToggle.innerHTML = '🐵';
+            }
+        });
+
+        // Password strength indicator
+        const passwordStrength = document.getElementById('passwordStrength');
+
+        passwordInput.addEventListener('input', () => {
+            const value = passwordInput.value;
+            let strength = '';
+
+            if (value.length < 6) {
+                strength = 'Weak';
+                passwordStrength.className = 'weak';
+            } else if (value.length >= 6 && value.length < 10) {
+                strength = 'Fair';
+                passwordStrength.className = 'fair';
+            } else if (value.length >= 10 && /[A-Z]/.test(value) && /[0-9]/.test(value)) {
+                strength = 'Strong';
+                passwordStrength.className = 'strong';
+            } else if (value.length >= 10 && /[A-Z]/.test(value) && /[0-9]/.test(value) && /[!@#$%^&*]/.test(value)) {
+                strength = 'Very Strong';
+                passwordStrength.className = 'very-strong';
+            }
+
+            passwordStrength.textContent = `Strength: ${strength}`;
+        });
+        console.log('Form submitted');
+console.log('username:', document.getElementById('username').value);
+console.log('email:', document.getElementById('email').value);
+console.log('password:', document.getElementById('password').value);
+console.log('phoneNumber:', document.getElementById('phoneNumber').value);
+console.log('guarantor:', document.getElementById('guarantor').value);
+    </script>
+</body>
+</html>

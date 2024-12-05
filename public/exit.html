@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exit Twerandus Sacco</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color:  #0e0d0d;
+            margin: 0;
+        }
+        .exit-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="exit-container">
+        <h1>Are you sure you want to exit Twerandus Sacco?</h1>
+        <p>This action will immediately delete your account.</p>
+        <button id="confirmExit">Yes, Exit Sacco</button>
+        <button onclick="window.location.href='dashboard.html'">No, Go Back</button>
+        <div id="exitStatus"></div>
+    </div>
+    
+    <script>
+        document.getElementById('confirmExit').addEventListener('click', function() {
+            const username = localStorage.getItem('username');
+            const token = localStorage.getItem('token');
+            
+            if (!username || !token) {
+                document.getElementById('exitStatus').innerHTML = 'You are not logged in. Please log in first.';
+                return;
+            }
+
+            fetch('http://localhost:3000/exit-sacco', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ username })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('exitStatus').innerHTML = 'You have successfully exited the Sacco. Your account has been deleted.';
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 3000);
+                } else {
+                    document.getElementById('exitStatus').innerHTML = data.message;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('exitStatus').innerHTML = 'An error occurred. Please try again later.';
+            });
+        });
+    </script>
+</body>
+</html>

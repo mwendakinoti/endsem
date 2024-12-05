@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P2P Loan Request</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <form id="loan-request-form">
+    <div class="form-group">
+      <label for="borrower-name">Borrower Name</label>
+      <input type="text" id="borrower-name" required>
+    </div>
+    <div class="form-group">
+      <label for="borrower-email">Borrower Email</label>
+      <input type="email" id="borrower-email" required>
+    </div>
+    <div class="form-group">
+      <label for="loan-amount">Loan Amount</label>
+      <input type="number" id="loan-amount" required>
+    </div>
+    <div class="form-group">
+      <label for="interest-rate">Interest Rate (%)</label>
+      <input type="number" id="interest-rate" step="0.01" required>
+    </div>
+    <div class="form-group">
+      <label for="loan-term">Loan Term (Months)</label>
+      <input type="number" id="loan-term" required>
+    </div>
+    <button type="submit" class="submit-btn">Submit Loan Request</button>
+  </form>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('loan-request-form');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const loanData = {
+          borrowerName: document.getElementById('borrower-name').value,
+          borrowerEmail: document.getElementById('borrower-email').value,
+          loanAmount: parseFloat(document.getElementById('loan-amount').value),
+          interestRate: parseFloat(document.getElementById('interest-rate').value),
+          loanTerm: parseInt(document.getElementById('loan-term').value),
+          totalRepayment: 0,
+          monthlyRepayment: 0,
+          status: 'pending'
+        };
+
+        // Calculate total and monthly repayments
+        loanData.totalRepayment = loanData.loanAmount + 
+          (loanData.loanAmount * (loanData.interestRate / 100) * (loanData.loanTerm / 12));
+        loanData.monthlyRepayment = loanData.totalRepayment / loanData.loanTerm;
+
+        try {
+          const response = await fetch('http://localhost:3000/api/loan-requests', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(loanData),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            alert('Loan request submitted successfully!');
+            form.reset();
+          } else {
+            alert(result.message || 'Failed to submit loan request');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('An error occurred. Please try again.');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

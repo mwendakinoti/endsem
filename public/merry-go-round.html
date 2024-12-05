@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merry-Go-Round Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        header .back-button {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        header .back-button img {
+            width: 24px;
+            height: 24px;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        section {
+            background: #333;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #fff;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 0.5rem;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #444;
+            color: #fff;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #mgr-info {
+            background-color: #444;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .mgr-details {
+            margin-bottom: 1rem;
+        }
+
+        .mgr-details p {
+            margin: 0.5rem 0;
+        }
+
+        .mgr-details strong {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="back-button" onclick="window.history.back();">
+            <img src="https://img.icons8.com/ios-filled/50/ffffff/back.png" alt="Back">
+        </button>
+        <h1>Merry-Go-Round Management</h1>
+    </header>
+    <main>
+        <section id="join-mgr">
+            <h2>Join Merry-Go-Round</h2>
+            <select id="mgr-list" onchange="updateMGRDetails()"></select>
+            <div id="selected-mgr-details" class="mgr-details"></div>
+            <button onclick="joinMGR()">Join</button>
+        </section>
+        <section id="create-mgr">
+            <h2>Create New Merry-Go-Round</h2>
+            <input type="text" id="mgr-name" placeholder="MGR Name">
+            <input type="number" id="monthly-amount" placeholder="Monthly Amount">
+            <input type="date" id="start-date">
+            <button onclick="createMGR()">Create</button>
+        </section>
+        <section id="mgr-details">
+            <h2>Your Merry-Go-Round Details</h2>
+            <div id="mgr-info"></div>
+            <div id="notification-area"></div>
+            <div id="button-container"></div>
+            <div id="recipient-info"></div>
+        </section>
+    </main>
+    <script>
+        const SERVER_URL = 'http://localhost:3000';
+
+        async function joinMGR() {
+            const mgrId = document.getElementById('mgr-list').value;
+            try {
+                const response = await fetch(`${SERVER_URL}/mgr/join`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ mgrId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Successfully joined the MGR');
+                    loadMGRDetails();
+                } else {
+                    alert(`Error: ${data.message}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while joining the MGR');
+            }
+        }
+
+        async function createMGR() {
+    console.log('Starting createMGR');
+    const name = document.getElementById('mgr-name').value;
+    const monthlyAmount = document.getElementById('monthly-amount').value;
+    const startDate = document.getElementById('start-date').value;
+    
+    console.log('MGR details:', { name, monthlyAmount, startDate });
+    
+    try {
+        const response = await fetch(`${SERVER_URL}/mgr/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ 
+                name, 
+                monthlyAmount: parseFloat(monthlyAmount), 
+                startDate,
+                participants: [localStorage.getItem('username')]
+            })
+        });
+        
+        console.log('Create MGR response status:', response.status);
+        const data = await response.json();
+        console.log('Create MGR response data:', data);
+        
+        if (data.success) {
+            alert('MGR created successfully');
+            loadMGRList();
+        } else {
+            alert(`Error: ${data.message}`);
+        }
+    } catch (error) {
+        console.error('Error in createMGR:', error);
+        alert('An error occurred while creating the MGR');
+    }
+}
+
+        async function loadMGRDetails() {
+            try {
+                const response = await fetch(`${SERVER_URL}/mgr/list`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const data = await response.json();
+                if (data.success && data.mgrs) {
+                    const mgrInfo = document.getElementById('mgr-info');
+                    mgrInfo.innerHTML = data.mgrs.map(mgr => `
+                        <div class="mgr-details">
+                            <p><strong>Name:</strong> ${mgr.name}</p>
+                            <p><strong>Monthly Amount:</strong> ${mgr.monthlyAmount}</p>
+                            <p><strong>Start Date:</strong> ${new Date(mgr.startDate).toLocaleDateString()}</p>
+                            <p><strong>Participants:</strong> ${mgr.participants.length}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('mgr-info').textContent = 'No MGR details available';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('mgr-info').textContent = 'Failed to load MGR details';
+            }
+        }
+               
+        async function loadMGRList() {
+            try {
+                console.log('loadMGRList function called');
+                const token = localStorage.getItem('token');
+                console.log('Token from localStorage:', token);
+                console.log('Starting loadMGRList function');
+                const response = await fetch(`${SERVER_URL}/mgr/list`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                console.log('Response status:', response.status);
+            
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Raw data received from server:', JSON.stringify(data, null, 2));
+
+                if (data.success && data.mgrs) {
+                    console.log('Number of MGRs received:', data.mgrs.length);
+                    const mgrList = document.getElementById('mgr-list');
+                    mgrList.innerHTML = '<option value="">Select a Merry-Go-Round</option>';
+              
+                    data.mgrs.forEach(mgr => {
+                        console.log('Processing MGR:', mgr.name);
+                        const option = document.createElement('option');
+                        option.value = mgr._id;
+                        option.textContent = mgr.name;
+                        mgrList.appendChild(option);
+                    });
+                    console.log('Finished populating select element');
+                } else {
+                    console.log('No MGRs found or request unsuccessful');
+                }
+            } catch (error) {
+                console.error('Error loading MGR list:', error);
+            }
+        }
+
+        function checkForNotifications() {
+            fetch(`${SERVER_URL}/notifications`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.notifications && data.notifications.length > 0) {
+                    displayNotifications(data.notifications);
+                }
+            })
+            .catch(error => console.error('Error checking notifications:', error));
+        }
+
+        function displayNotifications(notifications) {
+            const notificationArea = document.getElementById('notification-area');
+            notificationArea.innerHTML = notifications.map(notif => 
+                `<div class="notification">${notif.message}</div>`
+            ).join('');
+        }
+
+        // Check for notifications every 5 minutes
+        setInterval(checkForNotifications, 5 * 60 * 1000);
+
+        async function updateMGRDetails() {
+            const mgrId = document.getElementById('mgr-list').value;
+            const detailsDiv = document.getElementById('selected-mgr-details');
+            
+            if (!mgrId) {
+                detailsDiv.innerHTML = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${SERVER_URL}/mgr/details/${mgrId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                
+                if (data.success && data.mgr) {
+                    detailsDiv.innerHTML = `
+                        <p><strong>Group Name:</strong> ${data.mgr.name}</p>
+                        <p><strong>Participants:</strong> ${data.mgr.participants.length}</p>
+                        <p><strong>Monthly Amount:</strong> ${data.mgr.monthlyAmount}</p>
+                    `;
+                } else {
+                    detailsDiv.innerHTML = '<p>Failed to load MGR details</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                detailsDiv.innerHTML = '<p>An error occurred while fetching MGR details</p>';
+            }
+        }
+
+        async function checkIfCreator() {
+    console.log('Checking if user is creator...');
+    const pickRecipientButton = document.getElementById('pick-recipient');
+    if (pickRecipientButton) {
+        pickRecipientButton.style.display = 'block';
+        console.log('Button visibility set to always show');
+    } else {
+        console.error('Button not found when trying to set visibility');
+    }
+}
+
+async function pickRecipient() {
+    try {
+        const response = await fetch(`${SERVER_URL}/mgr/pick-recipient`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            let message = `Selected recipient: ${data.recipient}<br>Phone number: ${data.phoneNumber}`;
+            if (data.message) {
+                message = `${data.message}<br>${message}`;
+            }
+            document.getElementById('recipient-info').innerHTML = message;
+        } else {
+            alert('Error picking recipient: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error picking recipient:', error);
+        alert('Error picking recipient. Please try again.');
+    }
+}
+
+        function createButton() {
+            const container = document.getElementById('button-container');
+            if (container) {
+                const button = document.createElement('button');
+                button.id = 'pick-recipient';
+                button.textContent = 'Pick Next Recipient';
+                button.style.display = 'block';
+                button.addEventListener('click', pickRecipient);
+                container.appendChild(button);
+                console.log('Button created dynamically');
+            } else {
+                console.error('Button container not found');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('You must be logged in to view this page.');
+                window.location.href = 'login.html';
+                return;
+            }
+            loadMGRList();
+            loadMGRDetails();
+            createButton();
+            checkIfCreator();
+        });
+    </script>
+</body>
+</html>

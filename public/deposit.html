@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deposit Money</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0e0d0d;
+      text-align: center;
+      padding: 2rem 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .header {
+      background-color: #007bff;
+      color: #fff;
+      padding: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+      z-index: 1000;
+    }
+
+    .footer {
+      background-color: #007bff;
+      color: #fff;
+      padding: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: auto;
+      z-index: 1000;
+    }
+
+    .container {
+      position: relative;
+      max-width: 600px;
+      width: 90%;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 123, 255, 0.8);
+      overflow: hidden;
+      z-index: 1;
+      transition: box-shadow 0.3s ease-in-out;
+    }
+
+    .container:hover {
+      box-shadow: 0 0 20px rgba(0, 123, 255, 0.4);
+    }
+
+    h1 {
+      margin-bottom: 1.5rem;
+      color: #007bff;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      text-align: left;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 1rem;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .back-btn {
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .back-btn button {
+      background-color: #6c757d;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .back-btn button:hover {
+      background-color: #5a6268;
+    }
+
+    #loader {
+      display: none;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #007bff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    .message {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-radius: 4px;
+    }
+
+    .error {
+      background-color: #ffe6e6;
+      color: #dc3545;
+      border: 1px solid #dc3545;
+    }
+
+    .success {
+      background-color: #e6ffe6;
+      color: #28a745;
+      border: 1px solid #28a745;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+      <h1>Deposit Form</h1>
+  </div>
+
+  <div class="container">
+      <form id="depositForm">
+          <label for="amount">Amount (KES):</label>
+          <input 
+              type="number" 
+              id="amount" 
+              name="amount" 
+              min="1" 
+              max="150000"
+              step="1" 
+              required
+          >
+          
+          <label for="phone">Phone Number:</label>
+          <input 
+              type="text" 
+              id="phone" 
+              name="phone" 
+              pattern="^(?:254|\+254|0)?([71](?:(?:0[0-8])|(?:[12][0-9])|(?:9[0-9])|(?:4[0-3])|(?:4[5-9])|(?:5[7-9])|(?:6[8-9]))[0-9]{6})$" 
+              placeholder="254XXXXXXXXX" 
+              required
+          >
+          
+          <button type="submit" id="submitButton">Initiate M-Pesa Payment</button>
+      </form>
+      <div id="loader" class="loader" style="display: none;"></div>
+      <div id="responseMessage" class="message"></div>
+      <div id="errorDetails" class="message error" style="display: none;"></div>
+
+      <div class="back-btn">
+          <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+      </div>
+  </div>
+
+  <div class="footer">
+      <p>&copy; 2024 Twerandus Sacco</p>
+  </div>
+
+  <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          const form = document.getElementById('depositForm');
+          const loader = document.getElementById('loader');
+          const responseMessage = document.getElementById('responseMessage');
+          const errorDetails = document.getElementById('errorDetails');
+          const submitButton = document.getElementById('submitButton');
+
+          async function initiatePayment(formData) {
+              const token = localStorage.getItem('token');
+              if (!token) {
+                  throw new Error('Authentication token not found');
+              }
+
+              const response = await fetch('http://localhost:3000/mpesa/stkPush', {
+                  method: 'POST',
+                  headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(formData)
+              });
+
+              // First try to parse the response as JSON
+              let data;
+              const textResponse = await response.text();
+              try {
+                  data = JSON.parse(textResponse);
+              } catch (e) {
+                  console.error('Failed to parse response:', textResponse);
+                  throw new Error('Invalid response from server');
+              }
+
+              // Check if the response was successful
+              if (!response.ok) {
+                  throw new Error(data.error || data.message || 'Payment initiation failed');
+              }
+
+              return data;
+          }
+
+          form.addEventListener('submit', async function(event) {
+              event.preventDefault();
+              
+              // Reset UI state
+              responseMessage.textContent = '';
+              responseMessage.className = 'message';
+              errorDetails.style.display = 'none';
+              errorDetails.textContent = '';
+              submitButton.disabled = true;
+              
+              try {
+                  loader.style.display = 'block';
+
+                  const amount = document.getElementById('amount').value;
+                  const phone = document.getElementById('phone').value;
+                  const username = localStorage.getItem('username');
+
+                  // Validate input
+                  if (!amount || amount < 1 || amount > 150000) {
+                      throw new Error('Amount must be between 1 and 150,000 KES');
+                  }
+
+                  // Format phone number
+                  let formattedPhone = phone.replace(/^\+?254|^0/, '254');
+                  if (!/^254[71][0-9]{8}$/.test(formattedPhone)) {
+                      throw new Error('Invalid phone number format. Use 254XXXXXXXXX');
+                  }
+
+                  const paymentData = {
+                      amount: Number(amount),
+                      phone: formattedPhone,
+                      username
+                  };
+
+                  console.log('Initiating payment with data:', {
+                      ...paymentData,
+                      username: '[REDACTED]'
+                  });
+
+                  const response = await initiatePayment(paymentData);
+
+                  if (response.success) {
+                      responseMessage.textContent = 'M-Pesa payment initiated. Please check your phone.';
+                      responseMessage.className = 'message success';
+                      
+                      if (response.checkoutRequestID) {
+                          pollTransactionStatus(response.checkoutRequestID);
+                      }
+                  } else {
+                      throw new Error(response.message || 'Failed to initiate payment');
+                  }
+
+              } catch (error) {
+                  console.error('Payment Error:', error);
+                  
+                  responseMessage.textContent = 'Payment initiation failed';
+                  responseMessage.className = 'message error';
+                  
+                  if (error.message.includes('token') || error.message.includes('Authentication')) {
+                      errorDetails.textContent = 'Session expired. Please login again.';
+                      setTimeout(() => {
+                          window.location.href = 'login.html';
+                      }, 2000);
+                  } else {
+                      errorDetails.textContent = error.message;
+                  }
+                  errorDetails.style.display = 'block';
+                  
+              } finally {
+                  loader.style.display = 'none';
+                  submitButton.disabled = false;
+              }
+          });
+   
+
+          async function pollTransactionStatus(checkoutRequestID) {
+              let attempts = 0;
+              const maxAttempts = 24; // 2 minutes with 5-second intervals
+              
+              const pollInterval = setInterval(async () => {
+                  try {
+                      attempts++;
+                      const token = localStorage.getItem('token');
+                      if (!token) {
+                          clearInterval(pollInterval);
+                          throw new Error('Session expired');
+                      }
+
+                      const response = await fetch(
+                          `http://localhost:3000/mpesa/transactionStatus/${checkoutRequestID}`,
+                          {
+                              headers: {
+                                  'Authorization': `Bearer ${token}`,
+                              }
+                          }
+                      );
+
+                      if (!response.ok) {
+                          throw new Error('Failed to check transaction status');
+                      }
+
+                      const data = await response.json();
+                      
+                      if (data.status === 'completed') {
+                          clearInterval(pollInterval);
+                          responseMessage.textContent = 'Payment successful! Redirecting...';
+                          responseMessage.className = 'message success';
+                          setTimeout(() => {
+                              window.location.href = 'dashboard.html';
+                          }, 3000);
+                      } else if (data.status === 'failed') {
+                          clearInterval(pollInterval);
+                          responseMessage.textContent = 'Payment failed. Please try again.';
+                          responseMessage.className = 'message error';
+                      } else if (attempts >= maxAttempts) {
+                          clearInterval(pollInterval);
+                          responseMessage.textContent = 'Transaction status check timed out. Please check your M-Pesa.';
+                          responseMessage.className = 'message warning';
+                      }
+                  } catch (error) {
+                      console.error('Status Check Error:', error);
+                      clearInterval(pollInterval);
+                      errorDetails.textContent = error.message;
+                      errorDetails.style.display = 'block';
+                      
+                      if (error.message.includes('Session expired')) {
+                          window.location.href = 'login.html';
+                      }
+                  }
+              }, 5000);
+          }
+      });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Customer Service</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0e0d0d;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .container {
+            background-color: #333;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 1.5rem;
+            color: #007bff;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #444;
+            color: #fff;
+            resize: vertical;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .back-btn {
+            margin-top: 1rem;
+        }
+
+        .back-btn button {
+            background-color: #6c757d;
+        }
+
+        .back-btn button:hover {
+            background-color: #5a6268;
+        }
+
+        .message-history {
+            margin-top: 2rem;
+        }
+
+        .message {
+            background-color: #444;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .message p {
+            margin: 0.5rem 0;
+        }
+
+        .message .status {
+            font-style: italic;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Contact Customer Service</h1>
+    </header>
+    <main>
+        <div class="container">
+            <form id="contactForm">
+                <label for="customerMessage">Write your message:</label>
+                <textarea id="customerMessage" name="customerMessage" rows="4" placeholder="Your message here..." required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+            <div class="back-btn">
+                <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+            </div>
+            <div class="message-history" id="messageHistory"></div>
+        </div>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchMessages();
+        });
+
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const message = document.getElementById('customerMessage').value.trim();
+            
+            if (message) {
+                try {
+                    const response = await fetch('http://localhost:3000/contact', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({ message })
+                    });
+                    
+                    const result = await response.json();
+                    if (response.ok) {
+                        alert('Your message has been sent to customer service.');
+                        document.getElementById('customerMessage').value = '';
+                        fetchMessages();
+                    } else {
+                        alert(result.message || 'Error sending message.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Server error, please try again later.');
+                }
+            } else {
+                alert('Please enter a message.');
+            }
+        });
+
+        async function fetchMessages() {
+    try {
+        const response = await fetch('http://localhost:3000/user/messages', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        displayMessages(data.messages);
+    } catch (error) {
+        console.error('Error:', error);
+        // Display an error message to the user
+        const messageHistory = document.getElementById('messageHistory');
+        messageHistory.innerHTML = '<p>Error loading messages. Please try again later.</p>';
+    }
+}
+        function displayMessages(messages) {
+            const messageHistory = document.getElementById('messageHistory');
+            messageHistory.innerHTML = '<h2>Message History</h2>';
+            messages.forEach(message => {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message';
+                messageElement.innerHTML = `
+                    <p><strong>Date:</strong> ${new Date(message.time).toLocaleString()}</p>
+                    <p><strong>Message:</strong> ${message.message}</p>
+                    <p class="status">${message.read ? 'Read' : 'Unread'}</p>
+                `;
+                messageHistory.appendChild(messageElement);
+            });
+        }
+    </script>
+</body>
+</html>

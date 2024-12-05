@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Withdraw Requests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        header .back-button {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        header .back-button img {
+            width: 24px;
+            height: 24px;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .request {
+            background: #333;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            transition: all 0.3s ease;
+            color: #fff;
+            margin-bottom: 2rem;
+        }
+
+        .request:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #fff;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 0.5rem;
+        }
+
+        p {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        p strong {
+            display: block;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+
+        .actions button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .approve {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .reject {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(0, 123, 255, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+        }
+
+        .glow {
+            animation: glow 2s infinite;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .withdrawal-info {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Manage Withdrawals</h1>
+    <div id="withdrawals-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchWithdrawals();
+        });
+
+        function fetchWithdrawals() {
+            fetch('http://localhost:3000/admin/withdrawals', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayWithdrawals(data.withdrawals);
+                } else {
+                    alert('Error fetching withdrawals');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function displayWithdrawals(withdrawals) {
+            const container = document.getElementById('withdrawals-container');
+            container.innerHTML = '';
+
+            withdrawals.forEach(withdrawal => {
+                const withdrawalElement = document.createElement('div');
+                withdrawalElement.className = 'withdrawal';
+                withdrawalElement.innerHTML = `
+                    <h3>Withdrawal Request</h3>
+                    <p>Username: ${withdrawal.username}</p>
+                    <p>Amount: $${withdrawal.amount}</p>
+                    <p>Status: ${withdrawal.status}</p>
+                    <button onclick="showWithdrawalInfo('${withdrawal._id}')">Show Info</button>
+                    <button onclick="approveWithdrawal('${withdrawal._id}')">Approve</button>
+                    <button onclick="rejectWithdrawal('${withdrawal._id}')">Reject</button>
+                    <div id="info-${withdrawal._id}" class="withdrawal-info">
+                        <p>Phone Number: ${withdrawal.phoneNumber}</p>
+                        <p>Please send $${withdrawal.amount} to this number via M-Pesa.</p>
+                        <button onclick="markCompleted('${withdrawal._id}')">Mark as Completed</button>
+                    </div>
+                `;
+                container.appendChild(withdrawalElement);
+            });
+        }
+
+        function showWithdrawalInfo(id) {
+            const infoDiv = document.getElementById(`info-${id}`);
+            infoDiv.style.display = infoDiv.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function approveWithdrawal(id) {
+            updateWithdrawalStatus(id, 'approved');
+        }
+
+        function rejectWithdrawal(id) {
+            updateWithdrawalStatus(id, 'rejected');
+        }
+
+        function markCompleted(id) {
+            updateWithdrawalStatus(id, 'completed');
+        }
+
+        function updateWithdrawalStatus(id, status) {
+            fetch(`http://localhost:3000/admin/withdrawals/${id}/${status}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Withdrawal ${status} successfully`);
+                    fetchWithdrawals();
+                } else {
+                    alert(`Error: ${data.message}`);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
