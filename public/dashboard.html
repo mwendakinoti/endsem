@@ -390,7 +390,6 @@
             <button onclick="window.location.href='financialhub.html'"><i class="fas fa-robot"></i>Financial-hub</button>
             <button onclick="window.location.href='p2p-Loan.html'"><i class="fas fa-money-bill-wave"></i>p2p Loan</button>
              <button onclick="window.location.href='view-loan-requests.html'"><i class="fas fa-money-bill-wave"></i>p2p</button>
-             <button onclick="window.location.href='loan-funding.html'"><i class="fas fa-money-bill-wave"></i>p2p funding</button>
             <button id="logoutButton" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             
         </div>
@@ -398,22 +397,6 @@
             </section>
 
             <div id="mgr-alert" class="alert alert-info" style="display: none;"></div>
-
-            <section class="section">
-                <div class="container">
-                    <h1>Sacco Dashboard Gamification</h1>
-                    <div class="level">
-                      <h2>Level: <span id="level">1</span></h2>
-                      <div class="xp-bar">
-                        <div class="xp-progress" id="xp-progress"></div>
-                      </div>
-                    </div>
-                    
-                    <div class="achievements">
-                      <h2>Achievements</h2>
-                      <div id="achievement-area"></div>
-                    </div>
-                  </div>
                 <div class="main-content">
                     <section class="section">
                         <h2>Notifications</h2>
@@ -452,7 +435,7 @@
         function logout() {
             localStorage.removeItem('username');
             localStorage.removeItem('token');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
 
         document.addEventListener('DOMContentLoaded', function() {
