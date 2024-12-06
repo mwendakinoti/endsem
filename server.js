@@ -260,31 +260,59 @@ function verifyToken(req, res, next) {
   const p2pLoan = mongoose.model('p2pLoan', loanSchema);
   
   // API Endpoint to create loan request
-  app.post('/api/loan-requests', async (req, res) => {
+  let loanRequests = [];
+
+ app.post('/api/loan-requests', async (req, res) => {
     try {
-      const p2ploan = new p2pLoan(req.body);
-      await p2ploan.save();
-      res.status(201).json({
-        message: 'Loan request created successfully',
-        data: p2ploan
-      });
+        const loanData = req.body;
+
+        // Basic validation
+        if (!loanData.borrowerName || !loanData.borrowerEmail) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        if (loanData.loanAmount <= 0 || loanData.interestRate <= 0) {
+            return res.status(400).json({ message: 'Invalid loan amount or interest rate' });
+        }
+
+        // Create a new loan document using the Mongoose model
+        const newLoan = new p2pLoan({
+            borrower: null, // You'll need to associate with a user
+            lender: null,   // You'll need to associate with a user
+            amount: loanData.loanAmount,
+            interestRate: loanData.interestRate,
+            term: loanData.loanTerm,
+            totalRepaymentAmount: loanData.totalRepayment,
+            monthlyRepayment: loanData.monthlyRepayment,
+            status: 'pending'
+        });
+
+        // Save the loan to the database
+        await newLoan.save();
+
+        // Optionally, you can still push to loanRequests array if needed
+        loanRequests.push(loanData);
+
+        // Return successful response
+        res.status(201).json({
+            message: 'Loan request submitted successfully',
+            loanRequest: newLoan
+        });
+
     } catch (error) {
-      console.error('Error creating loan request:', error);
-      res.status(500).json({ message: 'Server error' });
-    }
-  });
-  
-  // API Endpoint to get loan requests
-  app.get('/api/loan-requests', async (req, res) => {
-    try {
-        const loanRequests = await p2pLoan.find();
-        res.json(loanRequests);
-    } catch (error) {
-        console.error('Error fetching loan requests:', error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Server error:', error);
+        res.status(500).json({ 
+            message: 'Internal server error', 
+            error: error.message 
+        });
     }
 });
-  
+
+// Get all loan requests
+app.get('/api/loan-requests', (req, res) => {
+    res.json(loanRequests);
+});
+
   // API Endpoint to get loan requests by email
   app.get('/api/loan-requests/:email', async (req, res) => {
     try {
